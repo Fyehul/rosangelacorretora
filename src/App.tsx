@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./app.css";
 import rosangelaImg from "./assets/img/rosangelaImg.png";
 import whatsappIcon from "./assets/whats-app.png";
+import instagramIcon from "./assets/instagram.png";
 
 // ========== CONSTANTES ==========
 const WA_NUMBER = "557999611186";
@@ -28,31 +29,36 @@ function scrollToContato() {
 // variant "white" → ícone branco (fundos escuros)
 // variant "gold"  → ícone dourado (footer-btn-gold)
 
-interface WaIconProps {
+interface IconProps {
   size?: number;
   variant?: "dark" | "white" | "gold";
   style?: React.CSSProperties;
 }
 
-function WaIcon({ size = 18, variant = "dark", style }: WaIconProps) {
-  const filters: Record<string, string> = {
-    dark:  "brightness(0)",
-    white: "brightness(0) invert(1)",
-    gold:  "invert(68%) sepia(48%) saturate(500%) hue-rotate(5deg) brightness(0.9)",
-  };
+const FILTERS: Record<string, string> = {
+  dark:  "brightness(0)",
+  white: "brightness(0) invert(1)",
+  gold:  "invert(68%) sepia(48%) saturate(500%) hue-rotate(5deg) brightness(0.9)",
+};
+
+function WaIcon({ size = 18, variant = "dark", style }: IconProps) {
   return (
     <img
       src={whatsappIcon}
       alt=""
       aria-hidden="true"
-      style={{
-        width: size,
-        height: size,
-        verticalAlign: "middle",
-        marginRight: 8,
-        filter: filters[variant],
-        ...style,
-      }}
+      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant], ...style }}
+    />
+  );
+}
+
+function IgIcon({ size = 18, variant = "white", style }: IconProps) {
+  return (
+    <img
+      src={instagramIcon}
+      alt=""
+      aria-hidden="true"
+      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant], ...style }}
     />
   );
 }
@@ -307,7 +313,10 @@ function Footer() {
               <WaIcon size={15} variant="gold" />
               WhatsApp
             </button>
-            <button className="footer-btn-ghost" onClick={openIg}>Instagram</button>
+            <button className="footer-btn-ghost" onClick={openIg}>
+              <IgIcon size={15} variant="white" />
+              Instagram
+            </button>
           </div>
         </div>
         <div className="footer-bottom">
