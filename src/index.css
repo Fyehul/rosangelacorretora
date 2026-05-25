@@ -1,5 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500&display=swap');
 
+/* ===== REVEAL ANIMATION ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ===== RESET ===== */
 *,
 *::before,
@@ -215,8 +227,8 @@ body {
 
 /* Frame da foto */
 .hero-photo-wrap {
-  display: flex;
-  justify-content: center;
+  display: flex !important;
+  margin-top: 8px;
 }
 
 .hero-photo-frame {
@@ -630,7 +642,13 @@ body {
   }
 
   .hero-photo-wrap {
-    display: none;
+    display: flex;
+    margin-top: 8px;
+  }
+
+  .hero-photo-frame {
+    width: 100%;
+    height: 320px;
   }
 
   .stats-section {
@@ -648,8 +666,8 @@ body {
     padding-bottom: 28px;
   }
 
-  .sobre-section {
-    padding: 60px 20px;
+  .hero-photo-frame img {
+    object-position: center 10%;
   }
 
   .sobre-grid {

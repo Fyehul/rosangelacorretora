@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./app.css";
 import rosangelaImg from "./assets/img/rosangelaImg.png";
 import whatsappIcon from "./assets/whats-app.png";
@@ -24,11 +24,7 @@ function scrollToContato() {
   document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" });
 }
 
-// ========== ÍCONE WHATSAPP ==========
-// variant "dark"  → ícone preto  (btn-gold, fundo dourado)
-// variant "white" → ícone branco (fundos escuros)
-// variant "gold"  → ícone dourado (footer-btn-gold)
-
+// ========== ÍCONES ==========
 interface IconProps {
   size?: number;
   variant?: "dark" | "white" | "gold";
@@ -43,23 +39,57 @@ const FILTERS: Record<string, string> = {
 
 function WaIcon({ size = 18, variant = "dark", style }: IconProps) {
   return (
-    <img
-      src={whatsappIcon}
-      alt=""
-      aria-hidden="true"
-      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant], ...style }}
-    />
+    <img src={whatsappIcon} alt="" aria-hidden="true"
+      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant ?? "dark"], ...style }} />
   );
 }
 
 function IgIcon({ size = 18, variant = "white", style }: IconProps) {
   return (
-    <img
-      src={instagramIcon}
-      alt=""
-      aria-hidden="true"
-      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant], ...style }}
-    />
+    <img src={instagramIcon} alt="" aria-hidden="true"
+      style={{ width: size, height: size, verticalAlign: "middle", marginRight: 8, filter: FILTERS[variant ?? "white"], ...style }} />
+  );
+}
+
+// ========== REVEAL ==========
+// Wrapper que anima suavemente (fade + subida) quando entra na tela.
+// delay em segundos — útil para escalonar itens de uma lista.
+
+interface RevealProps {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+function Reveal({ children, delay = 0, className = "", style }: RevealProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${visible ? "visible" : ""} ${className}`.trim()}
+      style={{ transitionDelay: delay ? `${delay}s` : undefined, ...style }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -93,7 +123,8 @@ function Hero() {
       <div className="hero-line-bottom" />
 
       <div className="hero-grid">
-        <div>
+        {/* Texto entra primeiro */}
+        <Reveal>
           <div className="tag">Corretora · CRECI 1572-2008</div>
           <h1 className="hero-title">
             Encontre<br />
@@ -112,15 +143,16 @@ function Hero() {
               Ver contato
             </button>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="hero-photo-wrap">
+        {/* Foto entra levemente depois */}
+        <Reveal delay={0.2} className="hero-photo-wrap">
           <div className="hero-photo-frame">
             <div className="frame-corner-tl" />
             <div className="frame-corner-br" />
             <img src={rosangelaImg} alt="Rosângela Ribeiro — Corretora de Imóveis" />
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -137,11 +169,11 @@ function Stats() {
   return (
     <section className="stats-section">
       <div className="stats-grid">
-        {STATS.map((s) => (
-          <div key={s.label} className="stat-item">
+        {STATS.map((s, i) => (
+          <Reveal key={s.label} delay={i * 0.15} className="stat-item">
             <div className="stat-number">{s.num}</div>
             <div className="stat-label">{s.label}</div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -160,7 +192,7 @@ function Sobre() {
   return (
     <section className="sobre-section">
       <div className="sobre-grid">
-        <div>
+        <Reveal>
           <div className="tag">Quem sou eu</div>
           <h2 className="sobre-title">Rosângela<br />Ribeiro</h2>
           <div className="gold-line" />
@@ -176,15 +208,15 @@ function Sobre() {
             <WaIcon size={16} variant="dark" />
             Falar agora
           </button>
-        </div>
+        </Reveal>
 
         <div className="sobre-features">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="feat-card">
+          {FEATURES.map((f, i) => (
+            <Reveal key={f.title} delay={i * 0.1} className="feat-card">
               <div className="feat-card-icon">{f.icon}</div>
               <div className="feat-card-title">{f.title}</div>
               <div className="feat-card-desc">{f.desc}</div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -197,7 +229,7 @@ function CtaBanner() {
   return (
     <section className="cta-section">
       <div className="cta-pattern" />
-      <div className="cta-inner">
+      <Reveal className="cta-inner">
         <div className="tag">Pronto para começar?</div>
         <h2 className="cta-title">
           Seu próximo lar está<br />
@@ -214,7 +246,7 @@ function CtaBanner() {
           <WaIcon size={18} variant="dark" />
           Chamar no WhatsApp
         </button>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -237,62 +269,66 @@ const INFO_ITEMS: InfoItem[] = [
 function Contato() {
   return (
     <section className="contato-section" id="contato">
-      <div className="contato-header">
+      <Reveal className="contato-header">
         <div className="tag">Localização & Contato</div>
         <h2 className="contato-title">Entre em Contato</h2>
         <div className="gold-line" style={{ margin: "14px auto 0" }} />
-      </div>
+      </Reveal>
 
       <div className="contato-grid">
-        <div className="map-card">
-          <iframe
-            title="Localização Aracaju"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d489.70842951162456!2d-37.07149856618456!3d-10.912859218951487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x71ab308b1b50c35%3A0x96dda902df19e9a8!2sR.%20Sergipe%2C%20825%20-%20Siqueira%20Campos%2C%20Aracaju%20-%20SE%2C%2049075-540!5e0!3m2!1spt-BR!2sbr!4v1779159358168!5m2!1spt-BR!2sbr"
-            width="100%"
-            height={280}
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-          />
-          <div className="map-footer">
-            <span style={{ fontSize: 18 }}>📍</span>
-            <div>
-              <div className="info-label">Localização</div>
-              <div className="info-value">R. Sergipe, 825 - Siqueira Campos, Aracaju — Sergipe, Brasil</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="info-card">
-          <div className="info-card-header">
-            <div className="tag">Informações</div>
-            <h3 className="info-card-title">Fale Comigo</h3>
-            <div className="gold-line" />
-          </div>
-
-          {INFO_ITEMS.map((item) => (
-            <div
-              key={item.label}
-              className={`info-row${item.action ? " clickable" : ""}`}
-              onClick={item.action ?? undefined}
-            >
-              <span className="info-row-icon">{item.icon}</span>
+        <Reveal>
+          <div className="map-card">
+            <iframe
+              title="Localização Aracaju"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d489.70842951162456!2d-37.07149856618456!3d-10.912859218951487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x71ab308b1b50c35%3A0x96dda902df19e9a8!2sR.%20Sergipe%2C%20825%20-%20Siqueira%20Campos%2C%20Aracaju%20-%20SE%2C%2049075-540!5e0!3m2!1spt-BR!2sbr!4v1779159358168!5m2!1spt-BR!2sbr"
+              width="100%"
+              height={280}
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+            />
+            <div className="map-footer">
+              <span style={{ fontSize: 18 }}>📍</span>
               <div>
-                <div className="info-label">{item.label}</div>
-                <div className="info-value">{item.value}</div>
+                <div className="info-label">Localização</div>
+                <div className="info-value">R. Sergipe, 825 - Siqueira Campos, Aracaju — Sergipe, Brasil</div>
               </div>
             </div>
-          ))}
+          </div>
+        </Reveal>
 
-          <button
-            className="btn-gold"
-            style={{ marginTop: 16, width: "100%" }}
-            onClick={() => openWa("Olá Rosângela! Vi seu site e gostaria de informações!")}
-          >
-            <WaIcon size={16} variant="dark" />
-            Enviar mensagem
-          </button>
-        </div>
+        <Reveal delay={0.15}>
+          <div className="info-card">
+            <div className="info-card-header">
+              <div className="tag">Informações</div>
+              <h3 className="info-card-title">Fale Comigo</h3>
+              <div className="gold-line" />
+            </div>
+
+            {INFO_ITEMS.map((item) => (
+              <div
+                key={item.label}
+                className={`info-row${item.action ? " clickable" : ""}`}
+                onClick={item.action ?? undefined}
+              >
+                <span className="info-row-icon">{item.icon}</span>
+                <div>
+                  <div className="info-label">{item.label}</div>
+                  <div className="info-value">{item.value}</div>
+                </div>
+              </div>
+            ))}
+
+            <button
+              className="btn-gold"
+              style={{ marginTop: 16, width: "100%" }}
+              onClick={() => openWa("Olá Rosângela! Vi seu site e gostaria de informações!")}
+            >
+              <WaIcon size={16} variant="dark" />
+              Enviar mensagem
+            </button>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -303,7 +339,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
-        <div className="footer-top">
+        <Reveal className="footer-top">
           <div>
             <div className="footer-name">Rosângela Ribeiro</div>
             <div className="footer-creci">Corretora de Imóveis · CRECI 1572-2008</div>
@@ -318,8 +354,8 @@ function Footer() {
               Instagram
             </button>
           </div>
-        </div>
-        <div className="footer-bottom">
+        </Reveal>
+        <Reveal delay={0.1} className="footer-bottom">
           <span className="footer-copy">© 2026 Rosângela Ribeiro — Todos os direitos reservados</span>
           <span className="footer-copy">
             Desenvolvido por{" "}
@@ -332,7 +368,7 @@ function Footer() {
               Heverec Studio Code
             </a>
           </span>
-        </div>
+        </Reveal>
       </div>
     </footer>
   );
