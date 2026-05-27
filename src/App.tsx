@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import "./app.css";
+import "./App.css";
 import rosangelaImg from "./assets/img/rosangelaImg.png";
 import whatsappIcon from "./assets/whats-app.png";
 import instagramIcon from "./assets/instagram.png";
